@@ -4,12 +4,34 @@ import { Calendar, BellRing } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SparklesCore } from '../components/UI/Sparkles';
 
+function getTimeAgo(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffTime = now - date;
+  
+  if (diffTime < 0) return 'Just now';
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) {
+    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+    if (diffHours === 0) {
+      const diffMinutes = Math.floor(diffTime / (1000 * 60));
+      return diffMinutes <= 1 ? 'Just now' : `${diffMinutes} mins ago`;
+    }
+    return `${diffHours} hours ago`;
+  }
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+  if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
+  return `${Math.floor(diffDays / 365)} years ago`;
+}
+
 const announcementsData = [
   {
     id: 1,
     title: 'Welcome Freshers! 🚀 Your Journey Starts Here',
     date: 'August 21, 2026',
-    time: 'Just now',
     description: 'A massive welcome to all the freshers joining the college today! E-Cell is your launchpad to turn crazy ideas into reality. Whether you want to build the next big startup, learn cutting-edge tech, or just meet incredibly driven people — you are in the right place. Don\'t be afraid to dream big. Let\'s innovate together!',
     tag: 'Welcome',
     important: true
@@ -142,7 +164,7 @@ export default function Announcements() {
                     <Calendar size={14} />
                     <span>{announcement.date}</span>
                     <span>•</span>
-                    <span>{announcement.time}</span>
+                    <span>{announcement.time || getTimeAgo(announcement.date)}</span>
                   </div>
                 </div>
               </div>

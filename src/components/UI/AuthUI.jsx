@@ -70,7 +70,7 @@ export function Typewriter({
 
 
 function AuthFormContainer() {
-  const { signInWithGoogle, user } = useAuth();
+  const { signInWithEmail, user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -80,14 +80,24 @@ function AuthFormContainer() {
     if (user) navigate('/');
   }, [user, navigate]);
 
-  const handleGoogleSignIn = async () => {
+  const [email, setEmail] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  const handleEmailSignIn = async (e) => {
+    e.preventDefault();
+    if (!email) {
+      setError('Please enter your email address.');
+      return;
+    }
     try {
       setLoading(true);
       setError(null);
-      await signInWithGoogle();
-      // Supabase will redirect the browser to Google — no further action needed here
+      setSuccessMessage('');
+      await signInWithEmail(email);
+      setSuccessMessage('Magic link sent! Check your email to sign in.');
     } catch (err) {
-      setError(err.message || 'Failed to sign in with Google. Please try again.');
+      setError(err.message || 'Failed to send magic link. Please try again.');
+    } finally {
       setLoading(false);
     }
   };
@@ -105,27 +115,72 @@ function AuthFormContainer() {
         </div>
       )}
 
-      <button
-        type="button"
-        className="auth-button-google"
-        onClick={handleGoogleSignIn}
-        disabled={loading}
-      >
-        {loading ? (
-          <span className="auth-spinner" />
-        ) : (
-          <img
-            src="https://www.svgrepo.com/show/475656/google-color.svg"
-            alt="Google icon"
-            style={{ width: "20px", height: "20px", flexShrink: 0 }}
-          />
-        )}
-        {loading ? 'Redirecting to Google...' : 'Continue with Google'}
-      </button>
+      {successMessage && (
+        <div className="auth-success" style={{ 
+          background: 'rgba(34, 197, 94, 0.1)', 
+          color: '#22c55e', 
+          padding: '0.75rem 1rem', 
+          borderRadius: '8px', 
+          fontSize: '0.875rem',
+          marginBottom: '1.5rem',
+          border: '1px solid rgba(34, 197, 94, 0.2)'
+        }}>
+          {successMessage}
+        </div>
+      )}
 
-      <p className="auth-google-note">
-        We use Google Sign-In to keep your account secure.<br />
-        No passwords needed.
+      <form onSubmit={handleEmailSignIn} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <input 
+          type="email" 
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="your.email@example.com"
+          className="auth-input-email"
+          disabled={loading || successMessage}
+          style={{
+            width: '100%',
+            padding: '0.85rem 1rem',
+            borderRadius: '12px',
+            border: '1px solid var(--glass-border)',
+            background: 'var(--bg-secondary)',
+            color: 'var(--text-primary)',
+            fontSize: '1rem',
+            outline: 'none',
+            transition: 'border-color 0.2s ease'
+          }}
+        />
+        <button
+          type="submit"
+          className="auth-button-email"
+          disabled={loading || successMessage}
+          style={{
+            width: '100%',
+            padding: '0.85rem',
+            borderRadius: '12px',
+            background: 'var(--brand-primary)',
+            color: 'var(--text-inverse)',
+            fontWeight: '600',
+            fontSize: '1rem',
+            border: 'none',
+            cursor: loading || successMessage ? 'not-allowed' : 'pointer',
+            transition: 'opacity 0.2s ease',
+            opacity: loading || successMessage ? 0.7 : 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          {loading ? (
+            <span className="auth-spinner" style={{ borderColor: 'var(--text-inverse) transparent var(--text-inverse) transparent' }} />
+          ) : (
+            'Send Magic Link'
+          )}
+        </button>
+      </form>
+
+      <p className="auth-google-note" style={{ marginTop: '1.5rem' }}>
+        We use passwordless email login to keep your account secure.<br />
+        No passwords to remember.
       </p>
     </div>
   );

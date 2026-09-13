@@ -498,7 +498,8 @@ export default function Home() {
             <h4 style={{ color: '#fff', fontSize: '13px', marginBottom: '1.2rem', fontFamily: 'var(--font-input, monospace)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Connect</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '14px', color: '#9c9c9c' }}>
               <a href="mailto:edcell@uceou.edu" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s ease' }} onMouseOver={(e) => e.target.style.color = '#fff'} onMouseOut={(e) => e.target.style.color = '#9c9c9c'}>edcell@uceou.edu</a>
-              <a href="https://www.instagram.com/ecell_uceou" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s ease' }} onMouseOver={(e) => e.target.style.color = '#fff'} onMouseOut={(e) => e.target.style.color = '#9c9c9c'}>Instagram ↗</a>
+              <a href="https://www.instagram.com/ecell_uceou" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s ease' }} onMouseOver={(e) => e.target.style.color = '#fff'} onMouseOut={(e) => e.target.style.color = '#9c9c9c'}>Instagram ↗</a>
+              <a href="https://whatsapp.com/channel/0029Vb8TGWbJUM2WbnFyKj0I" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s ease' }} onMouseOver={(e) => e.target.style.color = '#fff'} onMouseOut={(e) => e.target.style.color = '#9c9c9c'}>WhatsApp Channel ↗</a>
             </div>
           </div>
         </div>
@@ -546,7 +547,23 @@ export default function Home() {
           textTransform: 'uppercase',
           letterSpacing: '0.05em'
         }}>
-          <span>© 2026 E-CELL UCEOU</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <span>© 2026 E-CELL UCEOU</span>
+            <span style={{ opacity: 0.5 }}>|</span>
+            <span>
+              website designed & developed by{' '}
+              <a 
+                href="https://www.linkedin.com/in/ronith-vardhan-rachakonda-10a248382" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{ color: 'inherit', textDecoration: 'underline', textUnderlineOffset: '2px', transition: 'color 0.2s ease' }} 
+                onMouseOver={(e) => e.target.style.color = '#fff'} 
+                onMouseOut={(e) => e.target.style.color = 'inherit'}
+              >
+                Ronith vardhan
+              </a>
+            </span>
+          </div>
           <a href="#" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s ease' }} onMouseOver={(e) => e.target.style.color = '#fff'} onMouseOut={(e) => e.target.style.color = 'rgba(255, 255, 255, 0.3)'} onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
             Back to Top ↑
           </a>
