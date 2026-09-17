@@ -4,9 +4,12 @@ import { useAuth } from '../contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   User, Mail, GraduationCap, CalendarCheck, Bookmark,
-  Settings, LogOut, ChevronRight, Award, Star, TrendingUp, ArrowLeft
+  Settings, LogOut, ChevronRight, Award, Star, TrendingUp, ArrowLeft,
+  Phone, Calendar as CalendarIcon
 } from 'lucide-react';
 import { SparklesCore } from '../components/UI/Sparkles';
+import EditProfileModal from '../components/UI/EditProfileModal';
+
 const REGISTERED_EVENTS = [];
 
 function StatCard({ icon, value, label, color }) {
@@ -37,8 +40,9 @@ function StatCard({ icon, value, label, color }) {
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { user, loading, signOut } = useAuth();
+  const { user, profile, loading, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState('events');
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -60,26 +64,31 @@ export default function Profile() {
     return Math.abs(hash) % 10000;
   };
 
-  const displayName = `User ${getUserNumber(user?.id)}`;
-  const displayEmail = 'Hidden for privacy';
+  const displayName = profile?.full_name || `User ${getUserNumber(user?.id)}`;
+  const displayEmail = user?.email || 'Hidden for privacy';
   const avatarInitials = displayName.substring(0, 2).toUpperCase();
-  const avatarUrl = user?.user_metadata?.avatar_url;
-  const joinedDate = user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Recently';
+  const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url;
+  const joinedDate = profile?.created_at ? new Date(profile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Recently';
 
   const profileData = {
     name: displayName,
     email: displayEmail,
-    role: "Member",
-    department: "Not Specified",
+    role: profile?.role || "Member",
+    department: profile?.college || "Not Specified",
+    phone: profile?.phone || "Not Provided",
+    dob: profile?.dob || "Not Provided",
     year: "Not Specified",
     joinedDate: joinedDate,
     eventsAttended: 0,
     upcomingEvents: 0,
     avatarInitials: avatarInitials,
-    avatarUrl: avatarUrl
+    avatarUrl: avatarUrl,
+    bannerUrl: profile?.banner_url
   };
 
   return (
+    <>
+    <EditProfileModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} />
     <div style={{ position: 'relative', minHeight: '100vh', background: 'var(--bg-primary)', overflow: 'hidden' }}>
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0 }}>
         <SparklesCore
@@ -121,13 +130,15 @@ export default function Profile() {
           {/* Cover banner */}
           <div style={{
             height: 'clamp(80px, 15vw, 120px)',
-            background: 'linear-gradient(135deg, var(--ecell-vermilion) 0%, var(--ecell-cobalt) 60%, var(--ecell-teal) 100%)',
+            background: profileData.bannerUrl ? `url(${profileData.bannerUrl}) center/cover no-repeat` : 'linear-gradient(135deg, var(--ecell-vermilion) 0%, var(--ecell-cobalt) 60%, var(--ecell-teal) 100%)',
             position: 'relative',
           }}>
-            <div style={{
-              position: 'absolute', inset: 0,
-              backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.12) 0%, transparent 60%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08) 0%, transparent 50%)'
-            }} />
+            {!profileData.bannerUrl && (
+              <div style={{
+                position: 'absolute', inset: 0,
+                backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.12) 0%, transparent 60%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08) 0%, transparent 50%)'
+              }} />
+            )}
           </div>
 
           <div style={{ padding: '0 clamp(1rem, 3vw, 2rem) clamp(1.25rem, 3vw, 2rem)' }}>
@@ -154,6 +165,7 @@ export default function Profile() {
 
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 <motion.button
+                  onClick={() => setIsEditModalOpen(true)}
                   whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                   style={{
                     background: 'var(--glass-bg)', border: '1px solid var(--glass-border)',
@@ -334,8 +346,9 @@ export default function Profile() {
                 {[
                   { label: 'Full Name', value: profileData.name, icon: <User size={15} /> },
                   { label: 'Email Address', value: profileData.email, icon: <Mail size={15} /> },
-                  { label: 'Department', value: profileData.department, icon: <GraduationCap size={15} /> },
-                  { label: 'Year', value: profileData.year, icon: <GraduationCap size={15} /> },
+                  { label: 'College / University', value: profileData.department, icon: <GraduationCap size={15} /> },
+                  { label: 'Phone Number', value: profileData.phone, icon: <Phone size={15} /> },
+                  { label: 'Date of Birth', value: profileData.dob, icon: <CalendarIcon size={15} /> },
                   { label: 'Member Since', value: profileData.joinedDate, icon: <CalendarCheck size={15} /> },
                 ].map((item, i) => (
                   <div key={i} style={{
@@ -355,6 +368,6 @@ export default function Profile() {
           </div>
         </motion.div>
       </div>
-    </div>
+    </>
   );
 }
