@@ -160,8 +160,8 @@ export default function Navbar() {
             }}
             transition={{ type: "spring", stiffness: 350, damping: 22 }}
             style={{
-              width: 'clamp(1.15rem, 2.75vw, 1.54rem)',
-              height: 'clamp(1.15rem, 2.75vw, 1.54rem)',
+              width: 'clamp(1.31rem, 3.12vw, 1.75rem)',
+              height: 'clamp(1.31rem, 3.12vw, 1.75rem)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
