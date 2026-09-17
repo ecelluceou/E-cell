@@ -12,13 +12,18 @@ export function AuthProvider({ children }) {
 
   // Fetch profile row from public.profiles
   const fetchProfile = async (userId) => {
-    if (!userId) { setProfile(null); return; }
+    if (!userId) { 
+      setProfile(null); 
+      setLoading(false);
+      return; 
+    }
     const { data } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
       .single();
     setProfile(data ?? null);
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -26,14 +31,12 @@ export function AuthProvider({ children }) {
       setSession(session);
       setUser(session?.user ?? null);
       fetchProfile(session?.user?.id ?? null);
-      setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       fetchProfile(session?.user?.id ?? null);
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
