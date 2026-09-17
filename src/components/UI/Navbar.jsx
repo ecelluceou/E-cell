@@ -191,9 +191,10 @@ export default function Navbar() {
             letterSpacing: '0.02em',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.35rem'
+            gap: '0.35rem',
+            marginLeft: '-0.3rem'
           }}>
-            E-CELL <span style={{ 
+            -CELL <span style={{ 
               color: 'var(--text-secondary)',
               fontWeight: 600,
               fontSize: '0.9em'
