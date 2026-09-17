@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Upload, Loader2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
@@ -13,6 +13,17 @@ export default function EditProfileModal({ isOpen, onClose }) {
     phone: profile?.phone || '',
     dob: profile?.dob || '',
   });
+
+  useEffect(() => {
+    if (isOpen && profile) {
+      setFormData({
+        full_name: profile.full_name || '',
+        college: profile.college || '',
+        phone: profile.phone || '',
+        dob: profile.dob || '',
+      });
+    }
+  }, [isOpen, profile]);
 
   const [avatarFile, setAvatarFile] = useState(null);
   const [bannerFile, setBannerFile] = useState(null);
