@@ -149,7 +149,7 @@ export default function Navbar() {
         boxShadow: '0 10px 40px -10px rgba(0, 0, 0, 0.4)'
       }}>
         {/* Brand */}
-        <Link to="/" style={{ textDecoration: 'none', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+        <Link to="/" style={{ textDecoration: 'none', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '0.1rem' }}>
           <motion.div
             initial={{ opacity: 0, rotate: -10, scale: 0.85 }}
             animate={{ opacity: 1, rotate: 0, scale: 1 }}
@@ -160,8 +160,8 @@ export default function Navbar() {
             }}
             transition={{ type: "spring", stiffness: 350, damping: 22 }}
             style={{
-              width: 'clamp(2.4rem, 4.5vw, 3rem)',
-              height: 'clamp(2.4rem, 4.5vw, 3rem)',
+              width: 'clamp(1.15rem, 2.75vw, 1.54rem)',
+              height: 'clamp(1.15rem, 2.75vw, 1.54rem)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -191,8 +191,7 @@ export default function Navbar() {
             letterSpacing: '0.02em',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.35rem',
-            marginLeft: '-0.3rem'
+            gap: '0.35rem'
           }}>
             -CELL <span style={{ 
               color: 'var(--text-secondary)',
