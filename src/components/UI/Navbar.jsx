@@ -34,6 +34,13 @@ const navLinks = [
     iconColor: "var(--ecell-coral)",
   },
   {
+    name: 'Leaderboard',
+    path: '/leaderboard',
+    icon: <Users size={18} />,
+    gradient: "radial-gradient(circle, rgba(229,169,0,0.15) 0%, rgba(229,169,0,0.06) 50%, rgba(229,169,0,0) 100%)",
+    iconColor: "#E5A900",
+  },
+  {
     name: 'Join Us',
     path: '/join-us',
     icon: <UserPlus size={18} />,

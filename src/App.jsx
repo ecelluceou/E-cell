@@ -17,8 +17,11 @@ const Announcements = React.lazy(() => import('./pages/Announcements'));
 const Auth = React.lazy(() => import('./pages/Auth'));
 const Profile = React.lazy(() => import('./pages/Profile'));
 const JoinUs = React.lazy(() => import('./pages/JoinUs'));
+const AdminDashboard = React.lazy(() => import('./pages/Admin/AdminDashboard'));
+const Leaderboard = React.lazy(() => import('./pages/Leaderboard'));
 
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
 import { Loader as RouteLoader } from './components/UI/Loader';
 // Paths where the Navbar should be hidden
 const HIDE_NAVBAR_PATHS = ['/auth'];
@@ -41,10 +44,12 @@ function Layout() {
             <Route path="/team" element={<Team />} />
             <Route path="/events" element={<Events />} />
             <Route path="/events/:id" element={<EventDetail />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/announcements" element={<Announcements />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/join-us" element={<JoinUs />} />
+            <Route path="/admin/*" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           </Routes>
         </Suspense>
       </main>

@@ -1,0 +1,215 @@
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
+import { Loader } from '../../components/UI/Loader';
+import { Plus, Trash2, Edit3, Image as ImageIcon } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+export default function ManageEvents() {
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Form State
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState(getEmptyForm());
+
+  function getEmptyForm() {
+    return {
+      id: '',
+      title: '',
+      tagline: '',
+      date: '',
+      time: '',
+      location: '',
+      category: '',
+      description: '',
+      highlights: [''],
+      tags: [''],
+      image: ''
+    };
+  }
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  async function fetchEvents() {
+    setLoading(true);
+    const { data, error } = await supabase.from('events').select('*').order('date', { ascending: false });
+    if (!error) setEvents(data || []);
+    setLoading(false);
+  }
+
+  const handleArrayChange = (field, index, value) => {
+    const newArray = [...formData[field]];
+    newArray[index] = value;
+    setFormData({ ...formData, [field]: newArray });
+  };
+
+  const addArrayItem = (field) => {
+    setFormData({ ...formData, [field]: [...formData[field], ''] });
+  };
+
+  const removeArrayItem = (field, index) => {
+    const newArray = formData[field].filter((_, i) => i !== index);
+    setFormData({ ...formData, [field]: newArray });
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random()}.${fileExt}`;
+    const filePath = `events/${fileName}`;
+
+    try {
+      const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from('images').getPublicUrl(filePath);
+      setFormData({ ...formData, image: data.publicUrl });
+    } catch (error) {
+      alert('Error uploading image: ' + error.message);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    const payload = {
+      ...formData,
+      date: formData.date ? new Date(formData.date).toISOString() : null,
+      highlights: formData.highlights.filter(h => h.trim() !== ''),
+      tags: formData.tags.filter(t => t.trim() !== '')
+    };
+
+    if (isEditing) {
+      await supabase.from('events').update(payload).eq('id', formData.id);
+    } else {
+      await supabase.from('events').insert([payload]);
+    }
+
+    setFormData(getEmptyForm());
+    setIsEditing(false);
+    await fetchEvents();
+  };
+
+  const editEvent = (event) => {
+    setFormData({
+      ...event,
+      date: event.date ? new Date(event.date).toISOString().slice(0, 16) : '',
+      highlights: event.highlights?.length ? event.highlights : [''],
+      tags: event.tags?.length ? event.tags : ['']
+    });
+    setIsEditing(true);
+  };
+
+  const deleteEvent = async (id) => {
+    if (window.confirm('Are you sure you want to delete this event?')) {
+      await supabase.from('events').delete().eq('id', id);
+      fetchEvents();
+    }
+  };
+
+  if (loading && events.length === 0) return <Loader />;
+
+  return (
+    <div>
+      <h1 style={{ fontFamily: 'var(--font-heading)', marginBottom: '2rem' }}>Manage Events</h1>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem' }}>
+        {/* Form Panel */}
+        <div style={{ background: 'var(--glass-bg)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
+          <h3 style={{ marginBottom: '1.5rem', color: 'var(--brand-primary)' }}>
+            {isEditing ? 'Edit Event' : 'Create New Event'}
+          </h3>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            
+            <input 
+              placeholder="Event ID (e.g. startup-bootcamp)" 
+              value={formData.id} 
+              onChange={e => setFormData({...formData, id: e.target.value})} 
+              disabled={isEditing}
+              required
+              className="admin-input" 
+            />
+
+            <input placeholder="Title" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required className="admin-input" />
+            <input placeholder="Tagline" value={formData.tagline} onChange={e => setFormData({...formData, tagline: e.target.value})} className="admin-input" />
+            
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <input type="datetime-local" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} className="admin-input" style={{ flex: 1 }} />
+              <input placeholder="Time String (e.g. 10:00 AM)" value={formData.time} onChange={e => setFormData({...formData, time: e.target.value})} className="admin-input" style={{ flex: 1 }} />
+            </div>
+
+            <input placeholder="Location" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="admin-input" />
+            <input placeholder="Category (e.g. Workshop)" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="admin-input" />
+            <textarea placeholder="Description" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} rows={4} className="admin-input" />
+
+            {/* Image Upload */}
+            <div>
+              <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Event Image</label>
+              {formData.image && <img src={formData.image} alt="preview" style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '8px', marginBottom: '0.5rem' }} />}
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <input type="file" accept="image/*" onChange={handleImageUpload} id="image-upload" style={{ display: 'none' }} />
+                <label htmlFor="image-upload" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem' }}>
+                  <ImageIcon size={16} /> Upload Image
+                </label>
+                <input placeholder="Or enter Image URL" value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} className="admin-input" style={{ flex: 1 }} />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type="submit" style={{ flex: 1, padding: '0.8rem', background: 'var(--brand-primary)', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
+                {isEditing ? 'Save Changes' : 'Create Event'}
+              </motion.button>
+              {isEditing && (
+                <button type="button" onClick={() => { setIsEditing(false); setFormData(getEmptyForm()); }} style={{ padding: '0.8rem', background: 'rgba(255,255,255,0.1)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
+                  Cancel
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
+
+        {/* List Panel */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {events.map(event => (
+            <div key={event.id} style={{ background: 'var(--glass-bg)', padding: '1rem', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--glass-border)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <img src={event.image || '/placeholder.jpg'} alt="" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '8px' }} />
+                <div>
+                  <h4 style={{ margin: '0 0 0.2rem 0', color: 'var(--text-primary)' }}>{event.title}</h4>
+                  <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{event.date ? new Date(event.date).toLocaleDateString() : 'TBA'}</p>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button onClick={() => editEvent(event)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', padding: '0.5rem', borderRadius: '8px', color: 'white', cursor: 'pointer' }}><Edit3 size={16} /></button>
+                <button onClick={() => deleteEvent(event.id)} style={{ background: 'rgba(228,71,46,0.1)', border: 'none', padding: '0.5rem', borderRadius: '8px', color: 'var(--brand-primary)', cursor: 'pointer' }}><Trash2 size={16} /></button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      {/* Global styles for admin inputs to reuse */}
+      <style>{`
+        .admin-input {
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.1);
+          padding: 0.8rem 1rem;
+          border-radius: 8px;
+          color: white;
+          font-family: inherit;
+          width: 100%;
+          box-sizing: border-box;
+        }
+        .admin-input:focus {
+          outline: none;
+          border-color: var(--brand-primary);
+        }
+      `}</style>
+    </div>
+  );
+}
