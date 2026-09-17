@@ -68,6 +68,24 @@ export default function EventDetail() {
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
+  const handleShare = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: event.title,
+          text: event.tagline,
+          url: url,
+        });
+      } catch (err) {
+        console.error('Error sharing', err);
+      }
+    } else {
+      navigator.clipboard.writeText(url);
+      alert('Link copied to clipboard!');
+    }
+  };
+
   if (!event) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', padding: '2rem', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
@@ -187,6 +205,7 @@ export default function EventDetail() {
                 <BookmarkPlus size={14} /> {isSaved ? 'Saved' : 'Save'}
               </motion.button>
               <motion.button
+                onClick={handleShare}
                 whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}
                 style={{
                   background: 'var(--glass-bg)', border: '1px solid var(--glass-border)',
