@@ -44,17 +44,36 @@ export class ErrorBoundary extends React.Component {
             borderRadius: '16px',
             boxShadow: '0 20px 50px rgba(0, 0, 0, 0.15)'
           }}>
-            <h1 style={{
+            <h2 style={{
               fontFamily: 'var(--font-heading)',
-              fontSize: 'clamp(2rem, 5vw, 3rem)',
+              fontSize: '2.5rem',
               color: 'var(--brand-primary)',
-              marginBottom: '1rem'
+              marginBottom: '1rem',
+              lineHeight: 1.2
             }}>
               Something went wrong
-            </h1>
-            <p style={{ fontSize: '1.1rem', marginBottom: '2rem', lineHeight: 1.6 }}>
+            </h2>
+            <p style={{
+              fontSize: '1.1rem',
+              color: 'var(--text-secondary)',
+              marginBottom: '2rem',
+              lineHeight: 1.6
+            }}>
               We encountered an unexpected error. Our team has been notified.
             </p>
+            {this.state.error && (
+              <pre style={{
+                background: 'rgba(255,0,0,0.1)',
+                padding: '1rem',
+                borderRadius: '8px',
+                color: '#ffaaaa',
+                textAlign: 'left',
+                overflowX: 'auto',
+                marginBottom: '2rem'
+              }}>
+                {this.state.error.toString()}
+              </pre>
+            )}
             <button
               onClick={this.handleRetry}
               style={{
