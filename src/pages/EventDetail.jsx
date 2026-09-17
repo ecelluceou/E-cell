@@ -239,7 +239,7 @@ export default function EventDetail() {
             border: '1px solid var(--glass-border)',
           }}>
             {[
-              event.date   && { icon: <Calendar size={16} />, text: event.date.toLocaleDateString('en-IN', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }), color: VERMILION },
+              event.date   && { icon: <Calendar size={16} />, text: new Date(event.date).toLocaleDateString('en-IN', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }), color: VERMILION },
               event.time   && { icon: <Clock size={16} />,    text: event.time,     color: TEAL   },
               event.location && { icon: <MapPin size={16} />, text: event.location, color: COBALT },
               { icon: <Users size={16} />, text: `${count} registered`,   color: SAFFRON },

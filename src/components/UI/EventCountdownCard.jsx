@@ -205,7 +205,7 @@ export function EventCountdownCard({
           <div className="ecc-meta">
             <div className="ecc-meta-item">
               <Calendar size={16} />
-              <span>{dateKnown ? date.toLocaleDateString() : '--/--/26'}</span>
+              <span>{dateKnown ? parsedDate.toLocaleDateString() : '--/--/26'}</span>
             </div>
             <div className="ecc-meta-item">
               <Users size={16} />
