@@ -207,7 +207,7 @@ export default function EventDetail() {
               event.date   && { icon: <Calendar size={16} />, text: event.date.toLocaleDateString('en-IN', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }), color: VERMILION },
               event.time   && { icon: <Clock size={16} />,    text: event.time,     color: TEAL   },
               event.location && { icon: <MapPin size={16} />, text: event.location, color: COBALT },
-              { icon: <Users size={16} />, text: `${event.attendees} registered`,   color: SAFFRON },
+              { icon: <Users size={16} />, text: `${count} registered`,   color: SAFFRON },
             ].filter(Boolean).map((item, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
                 <span style={{ color: item.color, display: 'flex', flexShrink: 0 }}>{item.icon}</span>
@@ -314,7 +314,7 @@ export default function EventDetail() {
                   <Users size={18} color={VERMILION} />
                 </div>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: '1.2rem', color: 'var(--text-primary)', lineHeight: 1 }}>{count || event.attendees}</div>
+                  <div style={{ fontWeight: 700, fontSize: '1.2rem', color: 'var(--text-primary)', lineHeight: 1 }}>{count}</div>
                   <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>Registered</div>
                 </div>
               </div>
