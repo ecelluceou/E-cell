@@ -10,7 +10,6 @@ import {
 import { SparklesCore } from '../components/UI/Sparkles';
 import EditProfileModal from '../components/UI/EditProfileModal';
 import { supabase } from '../lib/supabase';
-import { EVENTS } from '../data/events';
 
 function StatCard({ icon, value, label, color }) {
   return (
@@ -49,14 +48,17 @@ export default function Profile() {
   useEffect(() => {
     if (!user) return;
     const fetchUserEvents = async () => {
+      const { data: eventsData } = await supabase.from('events').select('*');
+      const allEvents = eventsData || [];
+
       const { data: regData } = await supabase
         .from('event_registrations')
         .select('event_id')
         .eq('user_id', user.id);
       if (regData) {
-        const registered = regData.map(r => EVENTS.find(e => e.id === r.event_id)).filter(Boolean);
+        const registered = regData.map(r => allEvents.find(e => e.id === r.event_id)).filter(Boolean);
         // Sort by date descending (closest first)
-        setRegisteredEvents(registered.sort((a, b) => (b.date || 0) - (a.date || 0)));
+        setRegisteredEvents(registered.sort((a, b) => (new Date(b.date).getTime() || 0) - (new Date(a.date).getTime() || 0)));
       }
 
       const { data: saveData } = await supabase
@@ -64,7 +66,7 @@ export default function Profile() {
         .select('event_id')
         .eq('user_id', user.id);
       if (saveData) {
-        const saved = saveData.map(r => EVENTS.find(e => e.id === r.event_id)).filter(Boolean);
+        const saved = saveData.map(r => allEvents.find(e => e.id === r.event_id)).filter(Boolean);
         setSavedEvents(saved);
       }
     };

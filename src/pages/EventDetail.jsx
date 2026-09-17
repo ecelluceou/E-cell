@@ -5,11 +5,11 @@ import {
   ArrowLeft, Calendar, Clock, Users, MapPin, Tag,
   CheckCircle, Share2, BookmarkPlus
 } from 'lucide-react';
-import { EVENTS } from '../data/events';
 import { useAuth } from '../contexts/AuthContext';
 import { useEventRegistration } from '../hooks/useEventRegistration';
 import { useEventSave } from '../hooks/useEventSave';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 
 // ─── Palette ────────────────────────────────────────────────────────────────
 const VERMILION = '#E4472E';
@@ -48,23 +48,33 @@ function CountdownUnit({ value, label }) {
 
 export default function EventDetail() {
   const { id } = useParams();
-  const event = EVENTS.find(e => e.id === id);
+  const [event, setEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
   const { isRegistered, count, loading: regLoading, checking, register, unregister } = useEventRegistration(id);
   const { isSaved, loading: saveLoading, toggleSave } = useEventSave(id);
-
-  const [timeLeft, setTimeLeft] = useState(() =>
-    event && event.date ? Math.max(0, Math.floor((+event.date - Date.now()) / 1000)) : -1
-  );
+  const [timeLeft, setTimeLeft] = useState(-1);
 
   useEffect(() => {
-    if (!event || !event.date) return;
-    const interval = setInterval(() => {
-      setTimeLeft(Math.max(0, Math.floor((+event.date - Date.now()) / 1000)));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [event]);
+    async function fetchEvent() {
+      const { data } = await supabase.from('events').select('*').eq('id', id).single();
+      if (data) {
+        setEvent(data);
+        if (data.date) {
+          setTimeLeft(Math.max(0, Math.floor((new Date(data.date).getTime() - Date.now()) / 1000)));
+        }
+      }
+      setLoading(false);
+    }
+    fetchEvent();
+  }, [id]);
+
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+    const timer = setInterval(() => setTimeLeft(t => Math.max(0, t - 1)), 1000);
+    return () => clearInterval(timer);
+  }, [timeLeft]);
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 

@@ -1,13 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { EventCountdownCard } from '../components/UI/EventCountdownCard';
-import { EVENTS } from '../data/events';
+import { supabase } from '../lib/supabase';
 
 import { RadialBackground } from '../components/UI/RadialBackground';
 import { SparklesCore } from '../components/UI/Sparkles';
 export default function Events() {
   const navigate = useNavigate();
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    async function fetchEvents() {
+      const { data } = await supabase.from('events').select('*').order('date', { ascending: true });
+      setEvents(data || []);
+      setLoading(false);
+    }
+    fetchEvents();
+  }, []);
 
   return (
     <div style={{ position: 'relative', minHeight: '100vh', color: 'var(--text-primary)', overflow: 'hidden' }}>
@@ -46,19 +57,25 @@ export default function Events() {
         Upcoming Events
       </motion.h1>
       
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: '2rem 1.5rem', placeItems: 'center' }}>
-        {EVENTS.map((event) => (
-          <EventCountdownCard 
-            key={event.id}
-            title={event.title}
-            date={event.date}
-            image={event.image}
-            attendees={event.attendees}
-            onJoin={() => navigate(`/events/${event.id}`)}
-            onClick={() => navigate(`/events/${event.id}`)}
-          />
-        ))}
-      </div>
+      {loading ? (
+        <div style={{ padding: '4rem', textAlign: 'center' }}>Loading events...</div>
+      ) : events.length === 0 ? (
+        <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-secondary)' }}>No upcoming events scheduled.</div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: '2rem 1.5rem', placeItems: 'center' }}>
+          {events.map((event) => (
+            <EventCountdownCard 
+              key={event.id}
+              title={event.title}
+              date={event.date}
+              image={event.image}
+              attendees={event.attendees || 0}
+              onJoin={() => navigate(`/events/${event.id}`)}
+              onClick={() => navigate(`/events/${event.id}`)}
+            />
+          ))}
+        </div>
+      )}
       </div>
     </div>
   );
