@@ -8,6 +8,7 @@ import {
 import { EVENTS } from '../data/events';
 import { useAuth } from '../contexts/AuthContext';
 import { useEventRegistration } from '../hooks/useEventRegistration';
+import { useEventSave } from '../hooks/useEventSave';
 import { useNavigate } from 'react-router-dom';
 
 // ─── Palette ────────────────────────────────────────────────────────────────
@@ -51,11 +52,11 @@ export default function EventDetail() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { isRegistered, count, loading: regLoading, checking, register, unregister } = useEventRegistration(id);
+  const { isSaved, loading: saveLoading, toggleSave } = useEventSave(id);
 
   const [timeLeft, setTimeLeft] = useState(() =>
     event && event.date ? Math.max(0, Math.floor((+event.date - Date.now()) / 1000)) : -1
   );
-  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     if (!event || !event.date) return;
@@ -166,19 +167,24 @@ export default function EventDetail() {
             </div>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexShrink: 0 }}>
               <motion.button
-                onClick={() => setSaved(s => !s)}
-                whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}
+                onClick={async () => {
+                  if (!user) { navigate('/auth'); return; }
+                  await toggleSave();
+                }}
+                disabled={saveLoading}
+                whileHover={{ scale: saveLoading ? 1 : 1.08 }} whileTap={{ scale: 0.95 }}
                 style={{
-                  background: saved ? `rgba(228,71,46,0.12)` : 'var(--glass-bg)',
-                  border: saved ? `1px solid rgba(228,71,46,0.3)` : '1px solid var(--glass-border)',
+                  background: isSaved ? `rgba(228,71,46,0.12)` : 'var(--glass-bg)',
+                  border: isSaved ? `1px solid rgba(228,71,46,0.3)` : '1px solid var(--glass-border)',
                   borderRadius: '9999px', padding: '0.4rem 0.75rem',
                   display: 'flex', alignItems: 'center', gap: '0.35rem',
-                  cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem',
-                  color: saved ? VERMILION : 'var(--text-secondary)',
-                  transition: 'all 0.2s ease'
+                  cursor: saveLoading ? 'not-allowed' : 'pointer', fontWeight: 600, fontSize: '0.8rem',
+                  color: isSaved ? VERMILION : 'var(--text-secondary)',
+                  transition: 'all 0.2s ease',
+                  opacity: saveLoading ? 0.7 : 1
                 }}
               >
-                <BookmarkPlus size={14} /> {saved ? 'Saved' : 'Save'}
+                <BookmarkPlus size={14} /> {isSaved ? 'Saved' : 'Save'}
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}

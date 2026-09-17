@@ -9,8 +9,8 @@ import {
 } from 'lucide-react';
 import { SparklesCore } from '../components/UI/Sparkles';
 import EditProfileModal from '../components/UI/EditProfileModal';
-
-const REGISTERED_EVENTS = [];
+import { supabase } from '../lib/supabase';
+import { EVENTS } from '../data/events';
 
 function StatCard({ icon, value, label, color }) {
   return (
@@ -43,6 +43,33 @@ export default function Profile() {
   const { user, profile, loading, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState('events');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [registeredEvents, setRegisteredEvents] = useState([]);
+  const [savedEvents, setSavedEvents] = useState([]);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchUserEvents = async () => {
+      const { data: regData } = await supabase
+        .from('event_registrations')
+        .select('event_id')
+        .eq('user_id', user.id);
+      if (regData) {
+        const registered = regData.map(r => EVENTS.find(e => e.id === r.event_id)).filter(Boolean);
+        // Sort by date descending (closest first)
+        setRegisteredEvents(registered.sort((a, b) => (b.date || 0) - (a.date || 0)));
+      }
+
+      const { data: saveData } = await supabase
+        .from('saved_events')
+        .select('event_id')
+        .eq('user_id', user.id);
+      if (saveData) {
+        const saved = saveData.map(r => EVENTS.find(e => e.id === r.event_id)).filter(Boolean);
+        setSavedEvents(saved);
+      }
+    };
+    fetchUserEvents();
+  }, [user]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -79,8 +106,9 @@ export default function Profile() {
     dob: profile?.dob || "Not Provided",
     year: "Not Specified",
     joinedDate: joinedDate,
-    eventsAttended: 0,
-    upcomingEvents: 0,
+    eventsAttended: registeredEvents.filter(e => e.date < new Date()).length,
+    upcomingEvents: registeredEvents.filter(e => e.date >= new Date()).length,
+    savedEventsCount: savedEvents.length,
     avatarInitials: avatarInitials,
     avatarUrl: avatarUrl,
     bannerUrl: profile?.banner_url
@@ -234,7 +262,7 @@ export default function Profile() {
         >
           <StatCard icon={<Award size={20} />} value={profileData.eventsAttended} label="Events Attended" color="var(--brand-primary)" />
           <StatCard icon={<CalendarCheck size={20} />} value={profileData.upcomingEvents} label="Upcoming Events" color="var(--ecell-teal)" />
-          <StatCard icon={<Star size={20} />} value="0" label="Events Saved" color="var(--ecell-saffron)" />
+          <StatCard icon={<Star size={20} />} value={profileData.savedEventsCount} label="Events Saved" color="var(--ecell-saffron)" />
           <StatCard icon={<TrendingUp size={20} />} value="New" label="Engagement" color="var(--ecell-cobalt)" />
         </motion.div>
 
@@ -280,9 +308,9 @@ export default function Profile() {
             {activeTab === 'events' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', margin: '0 0 0.35rem' }}>
-                  {REGISTERED_EVENTS.length > 0 ? "Events you're registered for:" : "You haven't registered for any events yet."}
+                  {registeredEvents.length > 0 ? "Events you're registered for:" : "You haven't registered for any events yet."}
                 </p>
-                {REGISTERED_EVENTS.map((ev, i) => (
+                {registeredEvents.map((ev, i) => (
                   <motion.div
                     key={ev.id}
                     initial={{ opacity: 0, x: -15 }}
@@ -334,10 +362,44 @@ export default function Profile() {
             )}
 
             {activeTab === 'saved' && (
-              <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)' }}>
-                <Bookmark size={36} style={{ marginBottom: '0.75rem', opacity: 0.4 }} />
-                <p style={{ fontWeight: 600, marginBottom: '0.4rem', fontSize: '0.9rem' }}>No saved events yet</p>
-                <p style={{ fontSize: '0.8rem' }}>Bookmark events from the events page to see them here.</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {savedEvents.length > 0 ? (
+                  savedEvents.map((ev, i) => (
+                    <motion.div
+                      key={ev.id}
+                      initial={{ opacity: 0, x: -15 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.07 }}
+                      onClick={() => navigate(`/events/${ev.id}`)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '0.75rem',
+                        padding: '0.75rem 1rem', borderRadius: '12px',
+                        border: '1px solid var(--glass-border)',
+                        cursor: 'pointer', transition: 'all 0.2s ease',
+                        background: 'var(--glass-bg)'
+                      }}
+                      whileHover={{ x: 4, background: 'rgba(229,169,0,0.04)', borderColor: 'rgba(229,169,0,0.2)' }}
+                    >
+                      <img
+                        src={ev.image}
+                        alt={ev.title}
+                        loading="lazy"
+                        style={{ width: 'clamp(40px, 10vw, 56px)', height: 'clamp(40px, 10vw, 56px)', borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }}
+                      />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text-primary)', marginBottom: '0.15rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ev.title}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{ev.date ? ev.date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'TBA'}</div>
+                      </div>
+                      <ChevronRight size={14} color="#ccc" style={{ flexShrink: 0 }} className="chevron-desktop" />
+                    </motion.div>
+                  ))
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)' }}>
+                    <Bookmark size={36} style={{ marginBottom: '0.75rem', opacity: 0.4, margin: '0 auto' }} />
+                    <p style={{ fontWeight: 600, marginBottom: '0.4rem', fontSize: '0.9rem' }}>No saved events yet</p>
+                    <p style={{ fontSize: '0.8rem' }}>Bookmark events from the events page to see them here.</p>
+                  </div>
+                )}
               </div>
             )}
 
