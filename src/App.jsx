@@ -18,6 +18,7 @@ const Auth = React.lazy(() => import('./pages/Auth'));
 const Profile = React.lazy(() => import('./pages/Profile'));
 const JoinUs = React.lazy(() => import('./pages/JoinUs'));
 
+import ProtectedRoute from './components/ProtectedRoute';
 import { Loader as RouteLoader } from './components/UI/Loader';
 // Paths where the Navbar should be hidden
 const HIDE_NAVBAR_PATHS = ['/auth'];
@@ -42,7 +43,7 @@ function Layout() {
             <Route path="/events/:id" element={<EventDetail />} />
             <Route path="/announcements" element={<Announcements />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/join-us" element={<JoinUs />} />
           </Routes>
         </Suspense>

@@ -46,4 +46,25 @@ export const EVENTS = [
     speakers: [],
     tags: ["networking", "founders", "community", "meetup"],
   },
+  {
+    id: 'ideathon',
+    title: "IDEATHON",
+    tagline: "Pitch your ideas, build the future",
+    date: new Date('2026-09-18T10:00:00'),
+    time: "10:00 AM",
+    image: UNSPLASH("1531482615713-2afd69097998"),
+    attendees: 124,
+    location: "Main Auditorium",
+    category: "Competition",
+    description:
+      "Join us for our flagship IDEATHON! Bring your innovative ideas to life during this intensive brainstorming and pitching event. Work with mentors, refine your business models, and present to a panel of expert judges.",
+    highlights: [
+      "Mentorship from industry veterans",
+      "Interactive pitch workshops",
+      "Prizes and seed funding opportunities",
+      "Networking with potential co-founders",
+    ],
+    speakers: [],
+    tags: ["ideathon", "pitch", "competition", "innovation"],
+  },
 ];

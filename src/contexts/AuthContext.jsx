@@ -5,22 +5,34 @@ import { supabase } from '../lib/supabase';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser]       = useState(null);
   const [session, setSession] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Fetch profile row from public.profiles
+  const fetchProfile = async (userId) => {
+    if (!userId) { setProfile(null); return; }
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    setProfile(data ?? null);
+  };
+
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      fetchProfile(session?.user?.id ?? null);
       setLoading(false);
     });
 
-    // Listen for auth changes (sign in, sign out, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+      fetchProfile(session?.user?.id ?? null);
       setLoading(false);
     });
 
@@ -30,9 +42,7 @@ export function AuthProvider({ children }) {
   const signInWithGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: window.location.origin,
-      },
+      options: { redirectTo: window.location.origin },
     });
     if (error) throw error;
   };
@@ -40,9 +50,7 @@ export function AuthProvider({ children }) {
   const signInWithEmail = async (email) => {
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: {
-        emailRedirectTo: window.location.origin,
-      },
+      options: { emailRedirectTo: window.location.origin },
     });
     if (error) throw error;
   };
@@ -53,7 +61,10 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signInWithGoogle, signInWithEmail, signOut }}>
+    <AuthContext.Provider value={{
+      user, session, profile, loading,
+      signInWithGoogle, signInWithEmail, signOut,
+    }}>
       {children}
     </AuthContext.Provider>
   );
@@ -61,8 +72,6 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 }

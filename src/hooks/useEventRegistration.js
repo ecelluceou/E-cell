@@ -1,0 +1,63 @@
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
+
+export function useEventRegistration(eventId) {
+  const { user } = useAuth();
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [count, setCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(true);
+
+  const checkStatus = useCallback(async () => {
+    setChecking(true);
+
+    // Get total attendee count
+    const { count: total } = await supabase
+      .from('event_registrations')
+      .select('*', { count: 'exact', head: true })
+      .eq('event_id', eventId);
+    setCount(total ?? 0);
+
+    // Check if this user is registered
+    if (user) {
+      const { data } = await supabase
+        .from('event_registrations')
+        .select('id')
+        .eq('event_id', eventId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+      setIsRegistered(!!data);
+    } else {
+      setIsRegistered(false);
+    }
+
+    setChecking(false);
+  }, [eventId, user]);
+
+  useEffect(() => { checkStatus(); }, [checkStatus]);
+
+  const register = async () => {
+    if (!user) return;
+    setLoading(true);
+    await supabase.from('event_registrations').insert({
+      user_id: user.id,
+      event_id: eventId,
+    });
+    await checkStatus();
+    setLoading(false);
+  };
+
+  const unregister = async () => {
+    if (!user) return;
+    setLoading(true);
+    await supabase.from('event_registrations')
+      .delete()
+      .eq('event_id', eventId)
+      .eq('user_id', user.id);
+    await checkStatus();
+    setLoading(false);
+  };
+
+  return { isRegistered, count, loading, checking, register, unregister };
+}

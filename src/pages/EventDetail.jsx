@@ -6,6 +6,9 @@ import {
   CheckCircle, Share2, BookmarkPlus
 } from 'lucide-react';
 import { EVENTS } from '../data/events';
+import { useAuth } from '../contexts/AuthContext';
+import { useEventRegistration } from '../hooks/useEventRegistration';
+import { useNavigate } from 'react-router-dom';
 
 // ─── Palette ────────────────────────────────────────────────────────────────
 const VERMILION = '#E4472E';
@@ -45,6 +48,9 @@ function CountdownUnit({ value, label }) {
 export default function EventDetail() {
   const { id } = useParams();
   const event = EVENTS.find(e => e.id === id);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { isRegistered, count, loading: regLoading, checking, register, unregister } = useEventRegistration(id);
 
   const [timeLeft, setTimeLeft] = useState(() =>
     event && event.date ? Math.max(0, Math.floor((+event.date - Date.now()) / 1000)) : -1
@@ -308,26 +314,61 @@ export default function EventDetail() {
                   <Users size={18} color={VERMILION} />
                 </div>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: '1.2rem', color: 'var(--text-primary)', lineHeight: 1 }}>{event.attendees}</div>
+                  <div style={{ fontWeight: 700, fontSize: '1.2rem', color: 'var(--text-primary)', lineHeight: 1 }}>{count || event.attendees}</div>
                   <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>Registered</div>
                 </div>
               </div>
 
               {/* Registrations notice */}
-              <div style={{
-                width: '100%', padding: '0.9rem',
-                background: 'rgba(229,169,0,0.08)',
-                border: `1px solid rgba(229,169,0,0.3)`,
-                borderRadius: '12px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-                fontWeight: 700, fontSize: '0.9rem',
-                color: SAFFRON,
-                textAlign: 'center',
-                letterSpacing: '0.01em',
-                fontFamily: 'var(--font-body)',
-              }}>
-                🕐 Registrations are yet to open
-              </div>
+              {event.date ? (
+                <motion.button
+                  onClick={async () => {
+                    if (!user) { navigate('/auth'); return; }
+                    if (isRegistered) { await unregister(); } else { await register(); }
+                  }}
+                  disabled={regLoading || checking}
+                  whileHover={{ scale: regLoading ? 1 : 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  style={{
+                    width: '100%',
+                    padding: '0.9rem',
+                    borderRadius: '12px',
+                    border: 'none',
+                    cursor: regLoading || checking ? 'not-allowed' : 'pointer',
+                    fontWeight: 700,
+                    fontSize: '0.95rem',
+                    transition: 'all 0.25s ease',
+                    background: isRegistered
+                      ? 'rgba(22,140,131,0.12)'
+                      : '#E4472E',
+                    color: isRegistered ? '#168C83' : 'white',
+                    border: isRegistered ? '1px solid rgba(22,140,131,0.3)' : '1px solid transparent',
+                    opacity: regLoading || checking ? 0.7 : 1,
+                  }}
+                >
+                  {checking
+                    ? 'Checking...'
+                    : regLoading
+                      ? 'Processing...'
+                      : !user
+                        ? '🔒 Sign in to Register'
+                        : isRegistered
+                          ? '✓ Registered — Click to Cancel'
+                          : 'Reserve Your Spot →'}
+                </motion.button>
+              ) : (
+                <div style={{
+                  width: '100%', padding: '0.9rem',
+                  background: 'rgba(229,169,0,0.08)',
+                  border: '1px solid rgba(229,169,0,0.3)',
+                  borderRadius: '12px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                  fontWeight: 700, fontSize: '0.9rem',
+                  color: '#E5A900', textAlign: 'center',
+                }}>
+                  🕐 Registrations are yet to open
+                </div>
+              )}
 
               {/* Tags */}
               {event.tags && (

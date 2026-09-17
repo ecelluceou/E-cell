@@ -37,7 +37,7 @@ function StatCard({ icon, value, label, color }) {
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState('events');
 
   useEffect(() => {
@@ -167,7 +167,10 @@ export default function Profile() {
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                  onClick={() => navigate('/auth')}
+                  onClick={async () => {
+                    await signOut();
+                    navigate('/');
+                  }}
                   style={{
                     background: 'rgba(22,140,131,0.08)', border: '1px solid rgba(22,140,131,0.2)',
                     borderRadius: '9999px', padding: '0.4rem 0.75rem',
