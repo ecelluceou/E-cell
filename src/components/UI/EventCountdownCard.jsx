@@ -15,10 +15,13 @@ export function EventCountdownCard({
 }) {
   // When no date is set, freeze everything at 0
   const dateKnown = date !== null && date !== undefined;
+  
+  // Convert string to Date if it comes from Supabase
+  const parsedDate = typeof date === 'string' ? new Date(date) : date;
 
   const [timeLeft, setTimeLeft] = useState(() => {
     if (!dateKnown) return 0;
-    return Math.max(0, Math.floor((+date - Date.now()) / 1000));
+    return Math.max(0, Math.floor((+parsedDate - Date.now()) / 1000)) || 0;
   });
 
   const shouldReduceMotion = useReducedMotion();
@@ -27,7 +30,7 @@ export function EventCountdownCard({
   useEffect(() => {
     if (!dateKnown) return; // No date — don't run a timer
     const update = () => {
-      const remaining = Math.max(0, Math.floor((+date - Date.now()) / 1000));
+      const remaining = Math.max(0, Math.floor((+parsedDate - Date.now()) / 1000)) || 0;
       setTimeLeft(remaining);
     };
     update();
