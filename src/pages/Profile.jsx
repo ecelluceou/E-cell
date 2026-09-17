@@ -143,7 +143,7 @@ export default function Profile() {
 
           <div style={{ padding: '0 clamp(1rem, 3vw, 2rem) clamp(1.25rem, 3vw, 2rem)' }}>
             {/* Avatar + Actions */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '-30px', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+            <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '-30px', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
               <motion.div
                 whileHover={{ scale: 1.06 }}
                 style={{
