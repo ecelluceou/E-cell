@@ -185,9 +185,24 @@ export default function EventDetail() {
             <div style={{ flex: '1 1 auto', minWidth: 0 }}>
               <h1 style={{
                 fontFamily: 'var(--font-heading)', fontSize: 'clamp(1.5rem, 5vw, 3.5rem)',
-                fontWeight: 800, color: 'var(--text-primary)', margin: 0, lineHeight: 1.1
+                fontWeight: 800, color: 'var(--text-primary)', margin: 0, lineHeight: 1.1,
+                display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap'
               }}>
                 {event.title}
+                {event.status && event.status !== 'upcoming' && (
+                  <span style={{
+                    fontSize: 'clamp(0.8rem, 2vw, 1.2rem)',
+                    padding: '0.2rem 0.8rem',
+                    borderRadius: '8px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    background: event.status === 'ended' ? 'var(--glass-border)' : 'rgba(229,169,0,0.15)',
+                    color: event.status === 'ended' ? 'var(--text-secondary)' : '#E5A900',
+                    border: `1px solid ${event.status === 'ended' ? 'var(--glass-border)' : 'rgba(229,169,0,0.3)'}`
+                  }}>
+                    {event.status}
+                  </span>
+                )}
               </h1>
               <p style={{ color: TEAL, fontWeight: 600, margin: '0.4rem 0 0', fontSize: 'clamp(0.82rem, 2vw, 1rem)' }}>
                 {event.tagline}
@@ -314,7 +329,12 @@ export default function EventDetail() {
                   padding: 'clamp(1.25rem, 3vw, 1.75rem)',
                   borderRadius: '18px',
                 }}>
-                  {isPast ? (
+                  {event.status === 'ended' ? (
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Event Ended</div>
+                      <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Thank you for participating!</div>
+                    </div>
+                  ) : isPast ? (
                     <div style={{ textAlign: 'center' }}>
                       <div style={{ fontSize: '1.1rem', fontWeight: 700, color: TEAL, marginBottom: '0.25rem' }}>Event Started!</div>
                       <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Join now to participate</div>
@@ -322,7 +342,7 @@ export default function EventDetail() {
                   ) : (
                     <>
                       <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                        <Clock size={13} /> Event starts in
+                        <Clock size={13} /> {event.status === 'postponed' || event.status === 'preponed' ? 'Rescheduled to' : 'Event starts in'}
                       </div>
                       <div style={{ display: 'flex', gap: '0.4rem' }}>
                         <CountdownUnit value={days} label="Days" />
@@ -355,7 +375,19 @@ export default function EventDetail() {
               </div>
 
               {/* Registrations notice */}
-              {event.date ? (
+              {event.status === 'ended' ? (
+                <div style={{
+                  width: '100%', padding: '0.9rem',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '12px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                  fontWeight: 700, fontSize: '0.9rem',
+                  color: 'var(--text-secondary)', textAlign: 'center',
+                }}>
+                  Event Ended
+                </div>
+              ) : event.date ? (
                 <motion.button
                   onClick={async () => {
                     if (!user) { navigate('/auth'); return; }

@@ -12,6 +12,7 @@ export function EventCountdownCard({
   onClick,
   enableAnimations = true,
   className = "",
+  status = "upcoming",
 }) {
   // When no date is set, freeze everything at 0
   const dateKnown = date !== null && date !== undefined;
@@ -177,8 +178,26 @@ export function EventCountdownCard({
         />
         <div className="ecc-image-gradient" />
 
-        {/* Urgency Badge */}
-        {timeLeft > 0 && timeLeft < 86400 && (
+        {/* Status Badge */}
+        {status === 'postponed' || status === 'preponed' ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="ecc-badge-urgent"
+            style={{ background: '#E5A900' }}
+          >
+            {status === 'postponed' ? 'Postponed' : 'Preponed'}
+          </motion.div>
+        ) : status === 'ended' ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="ecc-badge-urgent"
+            style={{ background: 'var(--glass-border)', color: 'var(--text-secondary)' }}
+          >
+            Ended
+          </motion.div>
+        ) : timeLeft > 0 && timeLeft < 86400 && (
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -215,11 +234,16 @@ export function EventCountdownCard({
         </motion.div>
 
         {/* Countdown Display */}
-        {timeLeft > 0 ? (
+        {status === 'ended' ? (
+          <motion.div variants={shouldAnimate ? childVariants : {}} className="ecc-started">
+            <div className="ecc-started-title">Event Ended</div>
+            <div className="ecc-started-subtitle">Thank you for participating!</div>
+          </motion.div>
+        ) : timeLeft > 0 ? (
           <motion.div className="ecc-countdown-section" variants={shouldAnimate ? childVariants : {}}>
             <div className="ecc-countdown-header">
               <Clock size={16} />
-              <span>Event starts in:</span>
+              <span>{status === 'postponed' || status === 'preponed' ? 'Rescheduled to:' : 'Event starts in:'}</span>
             </div>
 
             <div className="ecc-countdown-grid">
@@ -259,10 +283,10 @@ export function EventCountdownCard({
           animate="visible"
           whileHover="hover"
           whileTap="tap"
-          className={dateKnown ? "ecc-button" : "ecc-button ecc-button-tba"}
-          style={dateKnown ? {} : { cursor: 'default', pointerEvents: 'none' }}
+          className={dateKnown && status !== 'ended' ? "ecc-button" : "ecc-button ecc-button-tba"}
+          style={dateKnown && status !== 'ended' ? {} : { cursor: 'default', pointerEvents: 'none', background: status === 'ended' ? 'rgba(255,255,255,0.05)' : '' }}
         >
-          {!dateKnown ? "Registrations are yet to open" : (timeLeft > 0 ? "Reserve Your Spot" : "Join Event")}
+          {status === 'ended' ? "Event Ended" : !dateKnown ? "Registrations are yet to open" : (timeLeft > 0 ? "Reserve Your Spot" : "Join Event")}
         </motion.button>
       </div>
     </motion.div>

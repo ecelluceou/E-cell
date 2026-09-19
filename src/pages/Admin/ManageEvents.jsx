@@ -24,7 +24,8 @@ export default function ManageEvents() {
       description: '',
       highlights: [''],
       tags: [''],
-      image: ''
+      image: '',
+      status: 'upcoming'
     };
   }
 
@@ -100,7 +101,8 @@ export default function ManageEvents() {
       ...event,
       date: event.date ? new Date(event.date).toISOString().slice(0, 16) : '',
       highlights: event.highlights?.length ? event.highlights : [''],
-      tags: event.tags?.length ? event.tags : ['']
+      tags: event.tags?.length ? event.tags : [''],
+      status: event.status || 'upcoming'
     });
     setIsEditing(true);
   };
@@ -143,7 +145,20 @@ export default function ManageEvents() {
               <input placeholder="Time String (e.g. 10:00 AM)" value={formData.time} onChange={e => setFormData({...formData, time: e.target.value})} className="admin-input" style={{ flex: 1 }} />
             </div>
 
-            <input placeholder="Location" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="admin-input" />
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <input placeholder="Location" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="admin-input" style={{ flex: 1 }} />
+              <select 
+                value={formData.status} 
+                onChange={e => setFormData({...formData, status: e.target.value})} 
+                className="admin-input" 
+                style={{ flex: 1, cursor: 'pointer' }}
+              >
+                <option value="upcoming">Upcoming</option>
+                <option value="postponed">Postponed</option>
+                <option value="preponed">Preponed</option>
+                <option value="ended">Ended</option>
+              </select>
+            </div>
             <input placeholder="Category (e.g. Workshop)" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="admin-input" />
             <textarea placeholder="Description" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} rows={4} className="admin-input" />
 
@@ -181,7 +196,22 @@ export default function ManageEvents() {
                 <img src={event.image || '/placeholder.jpg'} alt="" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '8px' }} />
                 <div>
                   <h4 style={{ margin: '0 0 0.2rem 0', color: 'var(--text-primary)' }}>{event.title}</h4>
-                  <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{event.date ? new Date(event.date).toLocaleDateString() : 'TBA'}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{event.date ? new Date(event.date).toLocaleDateString() : 'TBA'}</p>
+                    {event.status && event.status !== 'upcoming' && (
+                      <span style={{
+                        fontSize: '0.65rem',
+                        padding: '0.1rem 0.4rem',
+                        borderRadius: '4px',
+                        fontWeight: 'bold',
+                        textTransform: 'uppercase',
+                        background: event.status === 'ended' ? 'rgba(255,255,255,0.1)' : 'rgba(229,169,0,0.15)',
+                        color: event.status === 'ended' ? 'var(--text-secondary)' : '#E5A900'
+                      }}>
+                        {event.status}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>

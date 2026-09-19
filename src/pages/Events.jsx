@@ -70,6 +70,7 @@ export default function Events() {
               date={event.date}
               image={event.image}
               attendees={event.attendees || 0}
+              status={event.status}
               onJoin={() => navigate(`/events/${event.id}`)}
               onClick={() => navigate(`/events/${event.id}`)}
             />
